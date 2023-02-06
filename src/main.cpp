@@ -3,11 +3,41 @@
 
 #include <libusb-1.0/libusb.h>
 
+#include "window.hpp"
+
 static void print_connected_devices();
+void renderApplicationGUI();
 
 int main(const int argc, const char* argv[]) {
-    print_connected_devices();
-    return 0;
+    Window* window = new Window(800, 600, "Scanner!");
+
+    while (window->keepWindowAlive()) {
+
+        /********************************************************************
+		 * Before rendering anything ImGui, restore the default render target
+		 ********************************************************************/
+		window->restoreRenderTarget();
+		window->clearWindow();
+
+		// Render anything related to ImGui
+        window->newImGuiFrame();
+		renderApplicationGUI();
+        window->renderImGui();
+
+		// Finally, update the frame being drawn and see if the window should exit.
+		window->updateWindow();
+    }
+
+    window->cleanUpWindow();
+    delete window;
+
+    exit(EXIT_SUCCESS);
+}
+
+void renderApplicationGUI() {
+	ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+
+	ImGui::ShowDemoWindow();
 }
 
 static void print_connected_devices() {
