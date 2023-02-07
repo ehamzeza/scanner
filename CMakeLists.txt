@@ -1,18 +1,27 @@
 cmake_minimum_required(VERSION 3.1.0)
-set(PROJECT_NAME "scanner")
 
 
 # Define the project and add the source files
+set(PROJECT_NAME "scanner")
 project(${PROJECT_NAME})
+
 add_executable(${PROJECT_NAME}
     "src/main.cpp"
     "src/window.cpp")
+
 target_include_directories(${PROJECT_NAME}
     PRIVATE
     "src")
 
+
 # Find and link against non-cmake library libusb
-find_library(usb-1.0 REQUIRED)
+find_library(
+    usb-1.0
+    PATHS "/usr/lib/x86_64-linux-gnu/"
+    PATH_SUFFIXES lib
+    NO_DEFAULT_PATH
+    REQURIED
+)
 target_link_libraries(${PROJECT_NAME} PUBLIC usb-1.0)
 
 
