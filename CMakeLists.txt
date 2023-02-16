@@ -7,7 +7,8 @@ project(${PROJECT_NAME})
 
 add_executable(${PROJECT_NAME}
     "src/main.cpp"
-    "src/window.cpp")
+    "src/window.cpp"
+    "src/serial-win32.cpp")
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE
@@ -15,14 +16,14 @@ target_include_directories(${PROJECT_NAME}
 
 
 # Find and link against non-cmake library libusb
-find_library(
-    usb-1.0
-    PATHS "/usr/lib/x86_64-linux-gnu/"
-    PATH_SUFFIXES lib
-    NO_DEFAULT_PATH
-    REQURIED
-)
-target_link_libraries(${PROJECT_NAME} PUBLIC usb-1.0)
+# find_library(
+#     usb-1.0
+#     PATHS "/usr/lib/x86_64-linux-gnu/"
+#     PATH_SUFFIXES lib
+#     NO_DEFAULT_PATH
+#     REQURIED
+# )
+# target_link_libraries(${PROJECT_NAME} PUBLIC usb-1.0)
 
 
 # We do not want to build the GLFW tests, examples, and 

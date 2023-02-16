@@ -1,17 +1,28 @@
 #include <iostream>
+#include <vector>
 #include <string>
 
-#include <libusb-1.0/libusb.h>
-
 #include "window.hpp"
+#include "serial.hpp"
 
-static void print_connected_devices();
-void renderApplicationGUI();
+static void renderApplicationGUI();
+
+static std::vector<std::string> device_list; 
+static SerialConnection* connection;
+
+static const unsigned int data_buffer_size = 256;
+static char data_buffer[data_buffer_size];
 
 int main(const int argc, const char* argv[]) {
     Window* window = new Window(800, 600, "Scanner!");
 
     while (window->keepWindowAlive()) {
+
+        if (connection != nullptr) {
+            int r = connection->read_data(data_buffer, data_buffer_size);
+            if (r > 0)
+                std::cout << "DATA: " << r << ":" << data_buffer << std::endl;
+        }
 
         /********************************************************************
 		 * Before rendering anything ImGui, restore the default render target
@@ -28,9 +39,14 @@ int main(const int argc, const char* argv[]) {
 		window->updateWindow();
     }
 
+    std::cout << "Cleaning up..." << std::endl;
     window->cleanUpWindow();
     delete window;
 
+    if (connection != nullptr) {
+        connection->close();
+        delete connection;
+    }
     exit(EXIT_SUCCESS);
 }
 
@@ -38,33 +54,28 @@ void renderApplicationGUI() {
 	ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
 	ImGui::ShowDemoWindow();
-}
 
-static void print_connected_devices() {
-    // For single-peripheral communication, default null context is acceptable.
-    struct libusb_context* usb_context = nullptr;
-
-    // Initialize LibUSB, check for errors:
-    int rc = libusb_init(&usb_context);
-    if (rc != LIBUSB_SUCCESS) {
-        std::cerr << "Failed to initialize LibUSB: RC = " << rc << std::endl;
-        return;
+    ImGui::Begin("Serial Connection Tools");
+    if (ImGui::Button("List Ports")) {
+        std::cout << "Listing Ports..." << std::endl;
+        device_list = get_available_ports();
     }
 
-    // Fetch the device list:
-    libusb_device** usb_devices;
-    ssize_t num_connected_devices = libusb_get_device_list(usb_context, &usb_devices);
-
-    // Output device information:
-    std::cout << "Connected USB Devices: " << num_connected_devices << std::endl;
-    for (int i = 0; i < num_connected_devices; i++) {
-        int bus = libusb_get_bus_number(usb_devices[i]);
-        int port = libusb_get_port_number(usb_devices[i]);
-        
-        std::cout << "DEVICE INDEX: " << i << "\tBUS: " << bus << "\t PORT: " << port << std::endl;
+    for(std::string item : device_list) {
+        ImGui::Text(item.c_str());
     }
 
-    // Clean up and terminate LibUSB:
-    libusb_free_device_list(usb_devices, 1);
-    libusb_exit(usb_context);
+    if (ImGui::Button("Connect")) {
+        std::cout << "Connected!" << std::endl;
+        connection = new SerialConnection("COM5");
+    }
+
+    if (ImGui::Button("Disconnect")) {
+        std::cout << "Disconnecting..." << std::endl;
+        if (connection != nullptr) {
+            connection->close();
+        }
+    }
+
+    ImGui::End();
 }

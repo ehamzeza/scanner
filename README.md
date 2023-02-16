@@ -1,5 +1,5 @@
 # About
-Scanner is a project designed to interface over USB with custom hardware to retrieve point cloud data and provide visualization tools. Currently, the project is only supported on linux (tested on Ubuntu 20.04).
+Scanner is a project designed to interface over USB with custom hardware to retrieve point cloud data and provide visualization tools. The project is intended to be cross-platform, however currently only Windows USB communication has been implemented.
 
 # Cloning Repository
 
