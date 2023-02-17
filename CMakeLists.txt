@@ -8,6 +8,8 @@ project(${PROJECT_NAME})
 add_executable(${PROJECT_NAME}
     "src/main.cpp"
     "src/window.cpp"
+    "src/logger.cpp"
+    "src/serial.cpp"
     "src/serial-win32.cpp")
 
 target_include_directories(${PROJECT_NAME}

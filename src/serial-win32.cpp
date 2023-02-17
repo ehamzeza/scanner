@@ -18,8 +18,8 @@ static HANDLE handle;
 static COMSTAT status;
 static DWORD errors;
 
-std::vector<std::string> get_available_ports() {
-    std::vector<std::string> available_ports;
+std::vector<DeviceListEntry> get_available_ports() {
+    std::vector<DeviceListEntry> available_ports;
 
     // Allocate a buffer to store the port path in:
     char* path_buffer = new char[MAX_PATH_LENGTH];
@@ -32,7 +32,7 @@ std::vector<std::string> get_available_ports() {
 
         // The port responded, add it to the list.
         if (result != 0) {
-            available_ports.push_back(port_name + " - " + std::string(path_buffer));
+            available_ports.push_back(DeviceListEntry(port_name, port_name + " - " + std::string(path_buffer)));
         }
     }
     

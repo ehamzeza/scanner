@@ -4,13 +4,24 @@
 #include <vector>
 #include <string>
 
+class DeviceListEntry {
+private:
+    std::string port;
+    std::string description;
+
+public:
+    DeviceListEntry(std::string port, std::string description);
+    std::string get_port();
+    std::string get_description();
+};
+
 /**
  * @brief Get the list of available ports on the system as a vector
  * of port names represented as strings.
  * 
  * @return std::vector<std::string> 
  */
-std::vector<std::string> get_available_ports();
+std::vector<DeviceListEntry> get_available_ports();
 
 /**
  * @brief Class that represents a general serial connection and the
