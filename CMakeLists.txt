@@ -44,6 +44,9 @@ target_link_libraries(${PROJECT_NAME} PUBLIC glfw)
 add_subdirectory(lib/glew lib-build/glew)
 target_link_libraries(${PROJECT_NAME} PUBLIC libglew_static)
 
+# Add GLM subdirectory and link slicer against it.
+add_subdirectory(lib/glm lib-build/glm)
+target_link_libraries(${PROJECT_NAME} PUBLIC glm)
 
 # ImGui library is provided as source files, build it 
 # differently and link against it.
