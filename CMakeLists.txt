@@ -10,7 +10,9 @@ add_executable(${PROJECT_NAME}
     "src/window.cpp"
     "src/logger.cpp"
     "src/serial.cpp"
-    "src/serial-win32.cpp")
+    "src/serial-win32.cpp"
+    
+    "src/graphics/buffers.cpp")
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE
