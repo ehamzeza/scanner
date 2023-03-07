@@ -7,10 +7,16 @@ project(${PROJECT_NAME})
 
 add_executable(${PROJECT_NAME}
     "src/main.cpp"
-    "src/logger.cpp"
-    "src/serial.cpp"
-    "src/serial-win32.cpp"
+    "src/application/core/viewport.cpp"
+    "src/application/core/application.cpp"
+    "src/application/logger/logger.cpp"
+    "src/application/serial/serial.cpp"
+    "src/application/serial/serial-win32.cpp"
     
+    # Shaders
+    "src/application/shaders/basic_shader.cpp"
+    "src/application/shaders/line_shader.cpp"
+
     # Graphics Engine
     "src/graphics/core/camera/camera.cpp"
     "src/graphics/core/opengl/buffers.cpp"
@@ -27,6 +33,13 @@ add_executable(${PROJECT_NAME}
 target_include_directories(${PROJECT_NAME}
     PRIVATE
     "src"
+    "src/application"
+    "src/application/core"
+    "src/application/logger"
+    "src/application/serial"
+
+    # Shaders
+    "src/application/shaders"
 
     # Graphics Engine
     "src/graphics"
