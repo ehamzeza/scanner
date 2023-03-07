@@ -7,16 +7,37 @@ project(${PROJECT_NAME})
 
 add_executable(${PROJECT_NAME}
     "src/main.cpp"
-    "src/window.cpp"
     "src/logger.cpp"
     "src/serial.cpp"
     "src/serial-win32.cpp"
     
-    "src/graphics/buffers.cpp")
+    # Graphics Engine
+    "src/graphics/core/camera/camera.cpp"
+    "src/graphics/core/opengl/buffers.cpp"
+    "src/graphics/core/opengl/shaders.cpp"
+    "src/graphics/core/model/model.cpp"
+    "src/graphics/core/mesh/mesh.cpp"
+    "src/graphics/display/window/window.cpp"
+    "src/graphics/display/surface/surface.cpp"
+    "src/graphics/utility/loader.cpp"
+    "src/graphics/utility/utility.cpp"
+    "src/graphics/utility/mouse.cpp"
+    "src/graphics/utility/math.cpp")
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE
-    "src")
+    "src"
+
+    # Graphics Engine
+    "src/graphics"
+    "src/graphics/core"
+    "src/graphics/core/mesh"
+    "src/graphics/core/model"
+    "src/graphics/core/camera"
+    "src/graphics/core/opengl"
+    "src/graphics/display/window"
+    "src/graphics/display/surface"
+    "src/graphics/utility")
 
 
 # Find and link against non-cmake library libusb

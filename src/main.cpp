@@ -4,7 +4,7 @@
 #include <string>
 #include <queue>
 
-#include "glm/mat4x4.hpp""
+#include "glm/mat4x4.hpp"
 
 #include "window.hpp"
 #include "serial.hpp"
