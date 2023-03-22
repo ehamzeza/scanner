@@ -1,6 +1,5 @@
 cmake_minimum_required(VERSION 3.1.0)
 
-
 # Define the project and add the source files
 set(PROJECT_NAME "scanner")
 project(${PROJECT_NAME})
@@ -51,18 +50,6 @@ target_include_directories(${PROJECT_NAME}
     "src/graphics/display/window"
     "src/graphics/display/surface"
     "src/graphics/utility")
-
-
-# Find and link against non-cmake library libusb
-# find_library(
-#     usb-1.0
-#     PATHS "/usr/lib/x86_64-linux-gnu/"
-#     PATH_SUFFIXES lib
-#     NO_DEFAULT_PATH
-#     REQURIED
-# )
-# target_link_libraries(${PROJECT_NAME} PUBLIC usb-1.0)
-
 
 # We do not want to build the GLFW tests, examples, and 
 # documentation when we are building the slicer.
