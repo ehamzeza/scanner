@@ -75,11 +75,21 @@ void Viewport3D::renderModel(Model& model, const glm::vec3 color) {
 void Viewport3D::handleInput() {
 	ImGuiIO* io = &ImGui::GetIO();
 	
+	// Determine the size, and relative top-left corner location of the "surface".
+	ImVec2 imWindowSize = ImGui::GetWindowSize();
+	ImVec2 imCursorPosition = ImGui::GetCursorScreenPos();
+
 	/**
 	 * Handle mouse scrolling, basically just change the distance parameter depending
-	 * on the mouse wheel delta.
+	 * on the mouse wheel delta. Only want to do this if the mouse is inside the window.
 	 */
-	this->orbit.distance -= io->MouseWheel;
+	ImVec2 mouseHoverPosition = io->MousePos;
+	ImVec2 relativeMouseHoverPosition = ImVec2(mouseHoverPosition.x - imCursorPosition.x, mouseHoverPosition.y - imCursorPosition.y);
+	if (relativeMouseHoverPosition.x < imWindowSize.x && relativeMouseHoverPosition.y < imWindowSize.y &&
+		relativeMouseHoverPosition.x >= 0 && relativeMouseHoverPosition.y >= 0)
+	{
+		this->orbit.distance -= io->MouseWheel;
+	}
 
 	/**
 	 * Handle the rotation and panning of the mouse. This needs to be done in one
@@ -110,10 +120,6 @@ void Viewport3D::handleInput() {
 		// Save the location of the mouse on the far plane.
 		this->mouseDownFarPlane = intersectRayOnPlane(camera.getLocation(), mouseRay, farPlanePosition, farPlaneNormal);
 	}
-
-	// Determine the size, and relative top-left corner location of the "surface".
-	ImVec2 imWindowSize = ImGui::GetWindowSize();
-	ImVec2 imCursorPosition = ImGui::GetCursorScreenPos();
 
 	if (io->MouseDown[0]) {
 		// Determine if the mouse was pressed while inside the viewport window.

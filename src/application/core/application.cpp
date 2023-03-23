@@ -11,6 +11,10 @@ const int Application::startApplication(const int width, const int height) {
 	this->window = new Window(width, height, "3D Scanner Sofware!");
 	this->logger = new Logger();
 
+	for (int i = 0; i < 25; i++) {
+		logger->log("SDJFKSDHF");
+	}
+
 	this->usbInterface = new USBInterface(this);
 
 	this->coordVAO = this->loader.createCoordinate(1.0f);
