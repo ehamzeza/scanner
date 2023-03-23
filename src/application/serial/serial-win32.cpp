@@ -60,7 +60,7 @@ SerialConnection::SerialConnection(const std::string port) {
     }
 
     // Setup specific additional parameters.
-    serial_parameters.BaudRate = CBR_9600;
+    serial_parameters.BaudRate = CBR_256000;
     serial_parameters.ByteSize = 8;
     serial_parameters.StopBits = ONESTOPBIT;
     serial_parameters.Parity = NOPARITY;

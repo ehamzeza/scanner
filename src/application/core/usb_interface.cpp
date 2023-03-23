@@ -3,7 +3,20 @@
 USBInterface::USBInterface(Application* application) {
     this->application = application;
 
+    // Allocate the buffer for reading USB data into
+    this->data_buffer = new char[this->data_buffer_size];
+
     this->serial_selected_index = 0;
+}
+
+void USBInterface::update() {
+    if (!this->connection || !this->connection->is_connected())
+        return;
+
+    if (this->connection->read_data(this->data_buffer, this->data_buffer_size) <= 0)
+        return;
+
+    this->application->logger->log(std::string(this->data_buffer));
 }
 
 void USBInterface::renderImGUI() {
@@ -72,6 +85,8 @@ void USBInterface::renderImGUI() {
 }
 
 void USBInterface::cleanUp() {
+    delete[] this->data_buffer;
+
     // Close the connection if it exists
     if (this->connection != nullptr) {
         this->connection->close();

@@ -11,23 +11,17 @@ const int Application::startApplication(const int width, const int height) {
 	this->window = new Window(width, height, "3D Scanner Sofware!");
 	this->logger = new Logger();
 
-	for (int i = 0; i < 25; i++) {
-		logger->log("SDJFKSDHF");
-	}
-
 	this->usbInterface = new USBInterface(this);
 
 	this->coordVAO = this->loader.createCoordinate(1.0f);
 	this->cubeVAO = this->loader.createFromOBJ("../res/cube.obj");
 	this->gridVAO = this->loader.createGridXZ(10.0, 10.0, 1.0);
-	
-	// this->slicingModel = Model(this->cubeVAO);
-	// this->slicingModel.location = glm::vec3{0.0, 1.0, 0.0};
 
 	this->viewport.createViewport("3D Viewport", width, height);
-	// this->graph.createGraph("2D Graph", width, height);
 
 	while (this->runApplication) {
+		this->usbInterface->update();
+
 		/*********************************
 		 * Render the 3D Viewport Surface:
 		 *********************************/

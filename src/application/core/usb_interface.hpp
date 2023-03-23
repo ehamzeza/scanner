@@ -13,8 +13,12 @@ private:
     SerialConnection* connection;
     int serial_selected_index;
 
+    const unsigned int data_buffer_size = 256;
+    char* data_buffer;
+
 public:
     USBInterface(Application* application);
+    void update();
     void renderImGUI();
     void cleanUp();
 
