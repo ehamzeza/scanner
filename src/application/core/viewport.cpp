@@ -91,6 +91,7 @@ void Viewport3D::handleInput() {
 		this->orbit.distance -= io->MouseWheel;
 	}
 
+
 	/**
 	 * Handle the rotation and panning of the mouse. This needs to be done in one
 	 * operation because we wish to prefferentially pan when the user chooses 

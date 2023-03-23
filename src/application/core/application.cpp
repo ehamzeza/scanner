@@ -70,10 +70,11 @@ void Application::cleanUpAplication() {
 
 	this->viewport.cleanUp();
 
-	delete this->logger;
+  delete this->logger;
 
 	this->usbInterface->cleanUp();
 	delete this->usbInterface;
+
 
 	this->window->cleanUpWindow();
 	delete this->window;
@@ -83,6 +84,7 @@ void Application::renderApplicationGUI() {
 	this->window->newImGuiFrame();
 
 	ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
+
 
 	this->usbInterface->renderImGUI();
 	this->logger->render_gui();
