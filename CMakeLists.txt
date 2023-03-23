@@ -7,26 +7,50 @@ project(${PROJECT_NAME})
 
 add_executable(${PROJECT_NAME}
     "src/main.cpp"
-    "src/window.cpp"
-    "src/logger.cpp"
-    "src/serial.cpp"
-    "src/serial-win32.cpp")
+    "src/application/core/viewport.cpp"
+    "src/application/core/application.cpp"
+    "src/application/logger/logger.cpp"
+    "src/application/serial/serial.cpp"
+    "src/application/serial/serial-win32.cpp"
+    
+    # Shaders
+    "src/application/shaders/basic_shader.cpp"
+    "src/application/shaders/line_shader.cpp"
+
+    # Graphics Engine
+    "src/graphics/core/camera/camera.cpp"
+    "src/graphics/core/opengl/buffers.cpp"
+    "src/graphics/core/opengl/shaders.cpp"
+    "src/graphics/core/model/model.cpp"
+    "src/graphics/core/mesh/mesh.cpp"
+    "src/graphics/display/window/window.cpp"
+    "src/graphics/display/surface/surface.cpp"
+    "src/graphics/utility/loader.cpp"
+    "src/graphics/utility/utility.cpp"
+    "src/graphics/utility/mouse.cpp"
+    "src/graphics/utility/math.cpp")
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE
-    "src")
+    "src"
+    "src/application"
+    "src/application/core"
+    "src/application/logger"
+    "src/application/serial"
 
+    # Shaders
+    "src/application/shaders"
 
-# Find and link against non-cmake library libusb
-# find_library(
-#     usb-1.0
-#     PATHS "/usr/lib/x86_64-linux-gnu/"
-#     PATH_SUFFIXES lib
-#     NO_DEFAULT_PATH
-#     REQURIED
-# )
-# target_link_libraries(${PROJECT_NAME} PUBLIC usb-1.0)
-
+    # Graphics Engine
+    "src/graphics"
+    "src/graphics/core"
+    "src/graphics/core/mesh"
+    "src/graphics/core/model"
+    "src/graphics/core/camera"
+    "src/graphics/core/opengl"
+    "src/graphics/display/window"
+    "src/graphics/display/surface"
+    "src/graphics/utility")
 
 # We do not want to build the GLFW tests, examples, and 
 # documentation when we are building the slicer.
