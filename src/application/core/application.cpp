@@ -71,7 +71,6 @@ void Application::cleanUpAplication() {
 	this->gridVAO.cleanUp();
 
 	this->viewport.cleanUp();
-	// this->graph.cleanUp();
 
 	this->window->cleanUpWindow();
 	delete this->window;
@@ -83,22 +82,8 @@ void Application::renderApplicationGUI() {
 	ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
 	this->viewport.RenderImGui();
-	// this->graph.RenderImGui();
 
-	// Render the model positioning ImGui
-	// ImGui::Begin("Model Control");
-	// ImGui::SliderFloat("Origin X", &this->slicingModel.location.x, -4, 4, "%.3f", 0);
-	// ImGui::SliderFloat("Origin Y", &this->slicingModel.location.y, -4, 4, "%.3f", 0);
-	// ImGui::SliderFloat("Origin Z", &this->slicingModel.location.z, -4, 4, "%.3f", 0);
-	// ImGui::SliderFloat("Rotation X", &this->slicingModel.rotation.x, -4, 4, "%.3f", 0);
-	// ImGui::SliderFloat("Rotation Y", &this->slicingModel.rotation.y, -4, 4, "%.3f", 0);
-	// ImGui::SliderFloat("Rotation Z", &this->slicingModel.rotation.z, -4, 4, "%.3f", 0);
-	// ImGui::SliderFloat("Scale X", &this->slicingModel.scale.x, -4, 4, "%.3f", 0);
-	// ImGui::SliderFloat("Scale Y", &this->slicingModel.scale.y, -4, 4, "%.3f", 0);
-	// ImGui::SliderFloat("Scale Z", &this->slicingModel.scale.z, -4, 4, "%.3f", 0);
-	// ImGui::End();
-
-	ImGui::ShowDemoWindow();
+	// ImGui::ShowDemoWindow();
 
 	this->window->renderImGui();
 }

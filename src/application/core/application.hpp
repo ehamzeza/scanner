@@ -30,8 +30,6 @@ protected:
 	VAO cubeVAO;
 	VAO gridVAO;
 	
-	// Model slicingModel;
-
 public:
 	Application();
 
