@@ -38,5 +38,7 @@ public:
     int read_data(const char* buffer, unsigned int buffer_size);
     bool write_data(const char* buffer, unsigned int buffer_size);
 
+    bool is_connected() {return this->connected;};
+
     void close();
 };

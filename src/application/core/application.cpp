@@ -9,9 +9,9 @@ Application::Application() {
 
 const int Application::startApplication(const int width, const int height) {
 	this->window = new Window(width, height, "3D Scanner Sofware!");
-
-	this->usbInterface = new USBInterface(nullptr);
 	this->logger = new Logger();
+
+	this->usbInterface = new USBInterface(this);
 
 	this->coordVAO = this->loader.createCoordinate(1.0f);
 	this->cubeVAO = this->loader.createFromOBJ("../res/cube.obj");
