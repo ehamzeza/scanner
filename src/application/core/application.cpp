@@ -9,18 +9,19 @@ Application::Application() {
 
 const int Application::startApplication(const int width, const int height) {
 	this->window = new Window(width, height, "3D Scanner Sofware!");
+	this->logger = new Logger();
+
+	this->usbInterface = new USBInterface(this);
 
 	this->coordVAO = this->loader.createCoordinate(1.0f);
 	this->cubeVAO = this->loader.createFromOBJ("../res/cube.obj");
 	this->gridVAO = this->loader.createGridXZ(10.0, 10.0, 1.0);
-	
-	// this->slicingModel = Model(this->cubeVAO);
-	// this->slicingModel.location = glm::vec3{0.0, 1.0, 0.0};
 
 	this->viewport.createViewport("3D Viewport", width, height);
-	// this->graph.createGraph("2D Graph", width, height);
 
 	while (this->runApplication) {
+		this->usbInterface->update();
+
 		/*********************************
 		 * Render the 3D Viewport Surface:
 		 *********************************/
@@ -36,9 +37,6 @@ const int Application::startApplication(const int width, const int height) {
 		// Render the Main Grid of the Viewport:
 		Model gridModel(this->gridVAO);
 		this->viewport.renderLines(gridModel, 1.0);
-
-		// Render the Model That We Are "Slicing":
-		// this->viewport.renderModel(this->slicingModel, {1.0, 0.0, 0.0});
 
 		// Render the Focal Point of the Viewport Camera:
 		Model focalCubeModel(this->cubeVAO);
@@ -71,7 +69,12 @@ void Application::cleanUpAplication() {
 	this->gridVAO.cleanUp();
 
 	this->viewport.cleanUp();
-	// this->graph.cleanUp();
+
+  delete this->logger;
+
+	this->usbInterface->cleanUp();
+	delete this->usbInterface;
+
 
 	this->window->cleanUpWindow();
 	delete this->window;
@@ -82,23 +85,12 @@ void Application::renderApplicationGUI() {
 
 	ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
+
+	this->usbInterface->renderImGUI();
+	this->logger->render_gui();
 	this->viewport.RenderImGui();
-	// this->graph.RenderImGui();
 
-	// Render the model positioning ImGui
-	// ImGui::Begin("Model Control");
-	// ImGui::SliderFloat("Origin X", &this->slicingModel.location.x, -4, 4, "%.3f", 0);
-	// ImGui::SliderFloat("Origin Y", &this->slicingModel.location.y, -4, 4, "%.3f", 0);
-	// ImGui::SliderFloat("Origin Z", &this->slicingModel.location.z, -4, 4, "%.3f", 0);
-	// ImGui::SliderFloat("Rotation X", &this->slicingModel.rotation.x, -4, 4, "%.3f", 0);
-	// ImGui::SliderFloat("Rotation Y", &this->slicingModel.rotation.y, -4, 4, "%.3f", 0);
-	// ImGui::SliderFloat("Rotation Z", &this->slicingModel.rotation.z, -4, 4, "%.3f", 0);
-	// ImGui::SliderFloat("Scale X", &this->slicingModel.scale.x, -4, 4, "%.3f", 0);
-	// ImGui::SliderFloat("Scale Y", &this->slicingModel.scale.y, -4, 4, "%.3f", 0);
-	// ImGui::SliderFloat("Scale Z", &this->slicingModel.scale.z, -4, 4, "%.3f", 0);
-	// ImGui::End();
-
-	ImGui::ShowDemoWindow();
+	// ImGui::ShowDemoWindow();
 
 	this->window->renderImGui();
 }

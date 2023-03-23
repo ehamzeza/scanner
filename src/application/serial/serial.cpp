@@ -12,3 +12,7 @@ std::string DeviceListEntry::get_port() {
 std::string DeviceListEntry::get_description() {
     return this->description;
 }
+
+bool SerialConnection::is_connected() {
+    return this->connected;
+}

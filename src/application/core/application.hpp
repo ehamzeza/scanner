@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "usb_interface.hpp"
+
 #include "basic_shader.hpp"
 #include "line_shader.hpp"
 
@@ -12,14 +14,23 @@
 #include "camera.hpp"
 #include "window.hpp"
 #include "loader.hpp"
+#include "logger.hpp"
 #include "model.hpp"
 #include "mouse.hpp"
 #include "math.hpp"
+
+// Required forward declaration of class that references "Application" but
+// will also be a member of "Application".
+class USBInterface;
 
 class Application {
 private:
 	bool runApplication;
 	int exitStatus;
+
+public:
+	USBInterface* usbInterface;
+	Logger* logger;
 
 protected:
 	Window* window;
@@ -30,8 +41,6 @@ protected:
 	VAO cubeVAO;
 	VAO gridVAO;
 	
-	// Model slicingModel;
-
 public:
 	Application();
 
