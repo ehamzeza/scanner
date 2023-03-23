@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.1.0)
+set(CMAKE_BUILD_TYPE Debug)
 
 
 # Define the project and add the source files

@@ -2,15 +2,25 @@
 
 USBInterface::USBInterface(Application* application) {
     this->application = application;
+    this->connection = nullptr;
 
     // Allocate the buffer for reading USB data into
     this->data_buffer = new char[this->data_buffer_size];
+
+    this->command_input_buffer = new char[this->command_input_buffer_size];
+    for (int i = 0; i < this->command_input_buffer_size; i++)
+        this->command_input_buffer[i] = '\0';
+    
+    this->command_output_buffer = new char[this->command_output_buffer_size];
 
     this->serial_selected_index = 0;
 }
 
 void USBInterface::update() {
-    if (!this->connection || !this->connection->is_connected())
+    if (!this->connection)
+        return;
+
+    if (!this->connection->is_connected())
         return;
 
     if (this->connection->read_data(this->data_buffer, this->data_buffer_size) <= 0)
@@ -69,7 +79,7 @@ void USBInterface::renderImGUI() {
     }
 
     ImGui::SameLine();
-    if(ImGui::Button(std::string("Disconnect").c_str())) {
+    if (ImGui::Button(std::string("Disconnect").c_str())) {
         this->application->logger->log("Disconnecting...");
         if (this->connection != nullptr) {
             this->connection->close();
@@ -77,7 +87,26 @@ void USBInterface::renderImGUI() {
         }
     }
 
-    if(!already_connected) {
+    ImGui::Separator();
+    ImGui::Text("Communication Controls:");
+
+    ImGui::InputText(std::string("Command: ").c_str(), this->command_input_buffer, this->command_input_buffer_size);
+
+    ImGui::SameLine();
+    if (ImGui::Button(std::string("Scan!").c_str())) {
+        std::string command(this->command_input_buffer);
+        int message_size = this->messageFromString(command, this->command_output_buffer, this->command_output_buffer_size);
+
+        if (message_size > 0) {
+            this->application->logger->log("Sending \"" + command + "\"...");
+            this->connection->write_data(this->command_output_buffer, message_size);
+        } else {
+            this->application->logger->log("Invalid message \"" + command + "\"!");
+        }
+    }
+
+
+    if (!already_connected) {
         ImGui::EndDisabled();
     }
 
@@ -86,6 +115,8 @@ void USBInterface::renderImGUI() {
 
 void USBInterface::cleanUp() {
     delete[] this->data_buffer;
+    delete[] this->command_input_buffer;
+    delete[] this->command_output_buffer;
 
     // Close the connection if it exists
     if (this->connection != nullptr) {
@@ -115,4 +146,57 @@ int USBInterface::show_combo_box(std::vector<std::string> items, int* selected_i
     } 
 
     return *selected_index;
+}
+
+int USBInterface::messageFromString(std::string message, char* out_buffer, int out_buffer_size) {
+    // No message is shorter than one character
+    if (message.length() < 1) return -1;
+
+    // Make sure the output buffer is big enough for the longest message
+    if (out_buffer_size < 16) {
+        std::cerr << "Output message buffer not big enough!" << std::endl;
+        return -1;
+    }
+
+    // Stream the message based on whitespace and produce the byte representation
+    std::stringstream stream(message);
+    
+    char control_char;
+    stream >> control_char;
+
+    char buffer_char;
+    int buffer_int;
+    float buffer_float;
+
+    switch (control_char) {
+        case 'r':
+            out_buffer[0] = 'r';
+            return 1;
+
+        case 'z':
+            out_buffer[0] = 'z';
+            stream >> buffer_char;
+            out_buffer[1] = buffer_char;
+            return 2;
+        
+        case 'h':
+            out_buffer[0] = 'h';
+            return 1;
+
+        case 'g':
+            out_buffer[0] = 'g';
+            stream >> buffer_char;
+            out_buffer[1] = buffer_char;
+            stream >> buffer_float;
+            memcpy(out_buffer + 2, &buffer_float, sizeof(float));
+            return 6;
+        
+        case 's':
+            out_buffer[0] = 's';
+            stream >> buffer_int;
+            memcpy(out_buffer + 1, &buffer_int, sizeof(int));
+            stream >> buffer_float;
+            memcpy(out_buffer + 5, &buffer_float, sizeof(float));
+            return 9;
+    };
 }

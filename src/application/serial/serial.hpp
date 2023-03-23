@@ -29,7 +29,7 @@ std::vector<DeviceListEntry> get_available_ports();
  */
 class SerialConnection {
 protected:
-    bool connected;
+    volatile bool connected;
 
 public:
     explicit SerialConnection(const std::string port);
@@ -38,7 +38,7 @@ public:
     int read_data(const char* buffer, unsigned int buffer_size);
     bool write_data(const char* buffer, unsigned int buffer_size);
 
-    bool is_connected() {return this->connected;};
+    bool is_connected();
 
     void close();
 };

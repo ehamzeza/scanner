@@ -110,7 +110,7 @@ bool SerialConnection::write_data(const char* buffer, unsigned int buffer_size) 
     if (!WriteFile(handle, (void*) buffer, buffer_size, &bytes_sent, 0)) {
         ClearCommError(handle, &errors, &status);
 
-        std::cerr << "Failed to send some data... (" << bytes_sent << "/" << buffer_size << ")!";
+        std::cerr << "Failed to send some data... (" << bytes_sent << "/" << buffer_size << ")!\n";
         return false;
     }
 

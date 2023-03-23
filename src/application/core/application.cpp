@@ -38,9 +38,6 @@ const int Application::startApplication(const int width, const int height) {
 		Model gridModel(this->gridVAO);
 		this->viewport.renderLines(gridModel, 1.0);
 
-		// Render the Model That We Are "Slicing":
-		// this->viewport.renderModel(this->slicingModel, {1.0, 0.0, 0.0});
-
 		// Render the Focal Point of the Viewport Camera:
 		Model focalCubeModel(this->cubeVAO);
 		focalCubeModel.location = {this->viewport.orbit.focusX, this->viewport.orbit.focusY, this->viewport.orbit.focusZ};
