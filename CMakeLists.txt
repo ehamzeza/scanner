@@ -9,6 +9,7 @@ add_executable(${PROJECT_NAME}
     "src/main.cpp"
     "src/application/core/viewport.cpp"
     "src/application/core/application.cpp"
+    "src/application/core/usb_interface.cpp"
     "src/application/logger/logger.cpp"
     "src/application/serial/serial.cpp"
     "src/application/serial/serial-win32.cpp"

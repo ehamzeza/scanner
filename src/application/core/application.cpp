@@ -10,6 +10,9 @@ Application::Application() {
 const int Application::startApplication(const int width, const int height) {
 	this->window = new Window(width, height, "3D Scanner Sofware!");
 
+	this->usbInterface = new USBInterface(nullptr);
+	this->logger = new Logger();
+
 	this->coordVAO = this->loader.createCoordinate(1.0f);
 	this->cubeVAO = this->loader.createFromOBJ("../res/cube.obj");
 	this->gridVAO = this->loader.createGridXZ(10.0, 10.0, 1.0);
@@ -72,6 +75,11 @@ void Application::cleanUpAplication() {
 
 	this->viewport.cleanUp();
 
+	delete this->logger;
+
+	this->usbInterface->cleanUp();
+	delete this->usbInterface;
+
 	this->window->cleanUpWindow();
 	delete this->window;
 }
@@ -81,6 +89,8 @@ void Application::renderApplicationGUI() {
 
 	ImGui::DockSpaceOverViewport(ImGui::GetMainViewport());
 
+	this->usbInterface->renderImGUI();
+	this->logger->render_gui();
 	this->viewport.RenderImGui();
 
 	// ImGui::ShowDemoWindow();
