@@ -26,16 +26,28 @@ void scanLine(uint32_t num_points, float spacing)
 //  Serial.println();
 }
 
+void debugLog(String message)
+{
+  uint32_t message_length = (uint32_t) message.length();
+  Serial.print('$');
+  char s[4];
+  memcpy(s, &message_length, 4);
+  Serial.write(s, 4);
+  Serial.print(message);
+  Serial.flush();
+}
+
 void setup(void)
 {
   Wire.begin();
   Serial.begin(256000);
 
-  Serial.println("Initializing TOF Sensor...");
   if (distanceSensor.begin()) {
-    Serial.println("TOF Sensor Failed!");
+    debugLog("TOF Sensor Failed!");
   }
-  Serial.println("Sensor online!");
+
+  delay(1000);
+  debugLog("Scanner online!");
 }
 
 void loop(void)
@@ -46,7 +58,7 @@ void loop(void)
   switch (Serial.peek()) {
     case 'r':
       Serial.read();
-      Serial.println("Ready!");
+      debugLog("Ready!");
       break;
 
     case 'z':
@@ -55,12 +67,12 @@ void loop(void)
         char axis = Serial.read();
         if (axis == 'z') {
           delay(1000);
-          Serial.println("Zeroed Z");
+          debugLog("Zeroed Z");
         } else if (axis == 'r') {
           delay(200);
-          Serial.println("Zeroed R");
+          debugLog("Zeroed R");
         } else {
-          Serial.println("Unknown Axis");
+          debugLog("Unknown Axis");
         }
       }
       break;
@@ -68,7 +80,7 @@ void loop(void)
     case 'h':
       Serial.read();
       delay(1000);
-      Serial.println("Height 100mm");
+      debugLog("Height 100mm");
       break;
 
     case 'g':
@@ -78,7 +90,7 @@ void loop(void)
         float pos = 0.0f;
         Serial.readBytes((uint8_t*) &pos, sizeof(float));
         delay(500);
-        Serial.println("Moving Axis '" + String(axis) + "' to " + String(pos));
+        debugLog("Moving Axis '" + String(axis) + "' to " + String(pos));
       }
       break;
 
@@ -91,16 +103,16 @@ void loop(void)
         Serial.readBytes((uint8_t*) &spacing, sizeof(float));
         
         if (num_points > 0) {
-          Serial.println("Scanning " + String(num_points) + " points, spacing = " + String(spacing));
+          debugLog("Scanning " + String(num_points) + " points, spacing = " + String(spacing));
           scanLine(num_points, spacing);
         } else {
-          Serial.println("Invalid Scan Request!");
+          debugLog("Invalid Scan Request!");
         }
       }
       break;
       
     default:
-      Serial.println("Unknown Char '" + String((char)Serial.read()) + "'!");
+      debugLog("Unknown Arduino Char '" + String((char)Serial.read()) + "'!");
       break;
   };
 }

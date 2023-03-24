@@ -6,27 +6,79 @@ USBInterface::USBInterface(Application* application) {
 
     // Allocate the buffer for reading USB data into
     this->data_buffer = new char[this->data_buffer_size];
+    for (int i = 0; i < this->data_buffer_size; i++)
+        this->data_buffer[i] = '\0';
 
     this->command_input_buffer = new char[this->command_input_buffer_size];
     for (int i = 0; i < this->command_input_buffer_size; i++)
         this->command_input_buffer[i] = '\0';
     
     this->command_output_buffer = new char[this->command_output_buffer_size];
+    for (int i = 0; i < this->command_output_buffer_size; i++)
+        this->command_output_buffer[i] = '\0';
 
     this->serial_selected_index = 0;
 }
 
-void USBInterface::update() {
+void USBInterface::updateRead() {
     if (!this->connection)
         return;
 
     if (!this->connection->is_connected())
         return;
 
-    if (this->connection->read_data(this->data_buffer, this->data_buffer_size) <= 0)
+    int num_chars_read = this->connection->read_data(this->data_buffer, this->data_buffer_size);
+    if (num_chars_read <= 0)
         return;
 
-    this->application->logger->log(std::string(this->data_buffer));
+    for (int i = 0; i < num_chars_read; i++)
+        this->captured_serial_data.push_back(this->data_buffer[i]);
+}
+
+void USBInterface::processInput() {
+    int size = this->captured_serial_data.size();
+    if (size <= 0)
+        return;
+
+    switch (this->captured_serial_data.front()) {
+        case '$':
+            if (size >= 5) {
+                union {
+                    int num;
+                    char bytes[4];
+                } data;
+
+                std::vector<char> vec(this->captured_serial_data.begin(), this->captured_serial_data.end());
+                for (int i = 0; i < 4; i++) {
+                    data.bytes[i] = vec.at(i + 1);
+                }
+
+                // Do we have enough information for whole string?
+                if (size >= 5 + data.num) {
+                    for (int i = 0; i < 5; i++)
+                        this->captured_serial_data.pop_front();
+                    
+                    std::stringstream stream;
+                    for (int i = 0; i < data.num; i++) {
+                        stream << this->captured_serial_data.front();
+                        this->captured_serial_data.pop_front();
+                    }
+
+                    this->application->logger->log("USB > \"" + stream.str() + "\"");
+                }
+            }
+            break;
+        default:
+            std::string unknown = "";
+            unknown += this->captured_serial_data.front();
+            
+            if (unknown == "\n")
+                unknown = "\\n";
+            
+            this->application->logger->log(std::string("Unexpected char '") + unknown + std::string("'!"));
+            this->captured_serial_data.pop_front();
+            break;
+    }
 }
 
 void USBInterface::renderImGUI() {
@@ -105,6 +157,9 @@ void USBInterface::renderImGUI() {
         }
     }
 
+    if (ImGui::Button(std::string("Reset Input").c_str())) {
+        this->captured_serial_data.clear();
+    }
 
     if (!already_connected) {
         ImGui::EndDisabled();
@@ -170,6 +225,7 @@ int USBInterface::messageFromString(std::string message, char* out_buffer, int o
 
     switch (control_char) {
         case 'r':
+            this->captured_serial_data.clear();
             out_buffer[0] = 'r';
             return 1;
 

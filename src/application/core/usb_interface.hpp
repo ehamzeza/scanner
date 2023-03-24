@@ -7,6 +7,7 @@
 #include <string>
 #include <queue>
 #include <cmath>
+#include <list>
 
 class Application;
 
@@ -17,6 +18,8 @@ private:
     std::vector<DeviceListEntry> device_list; 
     SerialConnection* connection;
     int serial_selected_index;
+
+    std::list<char> captured_serial_data;
 
     const unsigned int data_buffer_size = 256;
     char* data_buffer;
@@ -37,7 +40,8 @@ ScanData scan_data;
 
 public:
     USBInterface(Application* application);
-    void update();
+    void updateRead();
+    void processInput();
     void renderImGUI();
     void cleanUp();
 

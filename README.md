@@ -9,7 +9,7 @@ git clone --recursive https://github.com/ehamzeza/scanner.git
 ```
 
 # Dependencies (Arduino)
-* `SparkFun VL53L1X 3m Laser Distance Sensor`\
+* `SparkFun VL53L1X 4m Laser Distance Sensor`\
 Install from the Arduino "Library Manager"\
 Link: https://github.com/sparkfun/SparkFun_VL53L1X_Arduino_Library/
 

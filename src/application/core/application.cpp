@@ -20,7 +20,8 @@ const int Application::startApplication(const int width, const int height) {
 	this->viewport.createViewport("3D Viewport", width, height);
 
 	while (this->runApplication) {
-		this->usbInterface->update();
+		this->usbInterface->updateRead();
+		this->usbInterface->processInput();
 
 		/*********************************
 		 * Render the 3D Viewport Surface:
