@@ -3,6 +3,8 @@
 
 SFEVL53L1X distanceSensor;
 
+uint32_t readyCode = 0;
+
 void scanLine(uint32_t num_points, float spacing)
 {
 //  distanceSensor.startRanging(); //Write configuration bytes to initiate measurement
@@ -41,13 +43,14 @@ void setup(void)
 {
   Wire.begin();
   Serial.begin(256000);
+  delay(1000);
 
   if (distanceSensor.begin()) {
     debugLog("TOF Sensor Failed!");
   }
 
-  delay(1000);
   debugLog("Scanner online!");
+  readyCode = 1;
 }
 
 void loop(void)
@@ -56,34 +59,63 @@ void loop(void)
     return;
   
   switch (Serial.peek()) {
-    case 'r':
+    case 'r': {
       Serial.read();
-      debugLog("Ready!");
+      
+      debugLog("Ready! RC=" + String(readyCode));
+      Serial.print('r');
+      Serial.write((char*) &readyCode, 4);
+      Serial.flush();
+      readyCode ++;
       break;
+    }
 
-    case 'z':
+    case 'z': {
       if (Serial.available() >= 2) {
         Serial.read();
+        
         char axis = Serial.read();
         if (axis == 'z') {
-          delay(1000);
+          debugLog("Zeroing Z...");
+          delay(2000);
           debugLog("Zeroed Z");
+          
+          Serial.print("zz");
+          Serial.flush();
+          
         } else if (axis == 'r') {
-          delay(200);
+          debugLog("Zeroing R...");
+          delay(500);
           debugLog("Zeroed R");
+          
+          Serial.print("zr");
+          Serial.flush();
+          
         } else {
-          debugLog("Unknown Axis");
+          debugLog("Unknown Axis Zeroing Requested!");
+
+          Serial.print("z!");
+          Serial.flush();
         }
       }
       break;
-
-    case 'h':
+    }
+    
+    case 'h': {
       Serial.read();
-      delay(1000);
-      debugLog("Height 100mm");
+      float height = 13.14159f;
+      
+      debugLog("Finding height...");
+      delay(10000);
+      debugLog("Part height = " + String(height));
+      
+      Serial.print('h');
+      Serial.write((char*) &height, 4);
+      Serial.flush();
       break;
+    }
 
-    case 'g':
+    case 'g': {
       if (Serial.available() >= 6) {
         Serial.read();
         char axis = Serial.read();
@@ -93,8 +125,9 @@ void loop(void)
         debugLog("Moving Axis '" + String(axis) + "' to " + String(pos));
       }
       break;
+    }
 
-    case 's':
+    case 's': {
       if (Serial.available() >= 9) {
         Serial.read();
         uint32_t num_points = 0;
@@ -110,9 +143,11 @@ void loop(void)
         }
       }
       break;
+    }
       
-    default:
+    default: {
       debugLog("Unknown Arduino Char '" + String((char)Serial.read()) + "'!");
       break;
+    }
   };
 }

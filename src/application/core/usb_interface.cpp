@@ -35,14 +35,71 @@ void USBInterface::updateRead() {
         this->captured_serial_data.push_back(this->data_buffer[i]);
 }
 
-void USBInterface::processInput() {
+void USBInterface::processSerialIO() {
+    // If there is a message in the scan queue that is ready and we are currently
+    // in a scanning mode, send it.
+    if (this->scan_data.scan_started && this->scan_data.command_queue.size() > 0) {
+        ScanCommand& next = this->scan_data.command_queue.front();
+
+        if (!next.sent) {
+            next.sent = true;
+
+            const int send_buffer_size = 32;
+            char* send_buffer = new char[send_buffer_size];
+
+            for (int i = 0; i < send_buffer_size; i++)
+                send_buffer[i] = 0;
+
+            int message_size = this->messageFromString(next.command, send_buffer, send_buffer_size);
+
+            if (message_size > 0) {
+                this->application->logger->log("Sending Scan Command \"" + next.command + "\"...");
+                this->connection->write_data(send_buffer, message_size);
+            } else {
+                this->application->logger->log("Invalid Scan Command \"" + next.command + "\"!");
+            }
+
+            delete[] send_buffer;
+        }
+    }
+
+    // If there aren't any incoming messages, don't continue.
     int size = this->captured_serial_data.size();
     if (size <= 0)
         return;
 
+    // Process incoming messages if they exist.
     switch (this->captured_serial_data.front()) {
+        case 'r':
+            if (size >= 5) {
+                this->captured_serial_data.pop_front();
+                int readyCode = this->readSerialInt();
+
+                this->processCommandR(readyCode);
+            }
+            break;
+        
+        case 'z':
+            if (size >= 2) {
+                this->captured_serial_data.pop_front();
+                char axis = this->captured_serial_data.front();
+                this->captured_serial_data.pop_front();
+                this->processCommandZ(axis);
+            }
+            break;
+        
+        case 'h':
+            if (size >= 5) {
+                this->captured_serial_data.pop_front();
+                float heightValue = this->readSerialFloat();
+                this->processCommandH(heightValue);
+            }
+            break;
+        
         case '$':
             if (size >= 5) {
+                // We need to determine if the entirety of the string has arrived before
+                // popping anything from the buffer, determine the size here.
                 union {
                     int num;
                     char bytes[4];
@@ -50,11 +107,12 @@ void USBInterface::processInput() {
 
                 std::vector<char> vec(this->captured_serial_data.begin(), this->captured_serial_data.end());
                 for (int i = 0; i < 4; i++) {
-                    data.bytes[i] = vec.at(i + 1);
+                    data.bytes[i] = vec.at(i + 1); // + 1 offset for message character.
                 }
 
                 // Do we have enough information for whole string?
                 if (size >= 5 + data.num) {
+                    // Pop the message character and integer size segment.
                     for (int i = 0; i < 5; i++)
                         this->captured_serial_data.pop_front();
                     
@@ -64,10 +122,11 @@ void USBInterface::processInput() {
                         this->captured_serial_data.pop_front();
                     }
 
-                    this->application->logger->log("USB > \"" + stream.str() + "\"");
+                    this->application->logger->log("USB >> \"" + stream.str() + "\"");
                 }
             }
             break;
+        
         default:
             std::string unknown = "";
             unknown += this->captured_serial_data.front();
@@ -79,6 +138,71 @@ void USBInterface::processInput() {
             this->captured_serial_data.pop_front();
             break;
     }
+}
+
+void USBInterface::startScan() {
+    if (this->scan_data.scan_started) {
+        this->resetScan();
+    }
+
+    ScanCommand ready {
+        .command = "r"
+    };
+    this->scan_data.command_queue.push(ready);
+
+    this->scan_data.scan_started = true;
+}
+
+void USBInterface::resetScan() {
+    this->application->logger->log("Clearing existing scan data...");
+
+    this->scan_data.scan_started = false;
+    this->scan_data.scanned_points.clear();
+    
+    while (this->scan_data.command_queue.size() > 0) {
+        this->scan_data.command_queue.pop();
+    }
+}
+
+void USBInterface::processCommandR(int code) {
+    if (!this->scan_data.scan_started) {
+        return;
+    }
+
+    if (code > 0) {
+        this->scan_data.command_queue.pop();
+
+        ScanCommand zeroR {
+            .command = "z r"
+        };
+        this->scan_data.command_queue.push(zeroR);
+
+        ScanCommand zeroZ {
+            .command = "z z"
+        };
+        this->scan_data.command_queue.push(zeroZ);
+
+        ScanCommand height {
+            .command = "h"
+        };
+        this->scan_data.command_queue.push(height);
+        
+    } else {
+        this->application->logger->log("ERROR: Unexpected r command");
+    }
+}
+
+void USBInterface::processCommandZ(char axis) {
+    if (this->scan_data.command_queue.front().command.find("z") == 0 &&
+        (axis == 'r' || axis == 'z')) {
+        this->scan_data.command_queue.pop();
+    } else {
+        this->application->logger->log("ERROR: Unexpected z command");
+    }
+}
+
+void USBInterface::processCommandH(float height) {
+    this->application->logger->log(std::string("Hello: h ") + std::to_string(height));
 }
 
 void USBInterface::renderImGUI() {
@@ -146,6 +270,11 @@ void USBInterface::renderImGUI() {
 
     ImGui::SameLine();
     if (ImGui::Button(std::string("Scan!").c_str())) {
+        if (this->scan_data.scan_started) {
+            this->application->logger->log("WARNING: Sending manual commands with active scan, reseting scan...");
+            this->resetScan();
+        }
+
         std::string command(this->command_input_buffer);
         int message_size = this->messageFromString(command, this->command_output_buffer, this->command_output_buffer_size);
 
@@ -159,6 +288,15 @@ void USBInterface::renderImGUI() {
 
     if (ImGui::Button(std::string("Reset Input").c_str())) {
         this->captured_serial_data.clear();
+    }
+
+    if (ImGui::Button(std::string("Start Scan").c_str())) {
+        this->startScan();
+    }
+
+    ImGui::SameLine();
+    if (ImGui::Button(std::string("Reset Scan").c_str())) {
+        this->resetScan();
     }
 
     if (!already_connected) {
@@ -201,6 +339,44 @@ int USBInterface::show_combo_box(std::vector<std::string> items, int* selected_i
     } 
 
     return *selected_index;
+}
+
+int USBInterface::readSerialInt() {
+    if (this->captured_serial_data.size() < 4) {
+        this->application->logger->log("Attempted to read read serial int32 without enough bytes!");
+        return 0;
+    }
+
+    union {
+        char bytes[4];
+        int value;
+    } data;
+
+    for (int i = 0; i < 4; i++) {
+        data.bytes[i] = this->captured_serial_data.front();
+        this->captured_serial_data.pop_front();
+    }
+
+    return data.value;
+}
+
+float USBInterface::readSerialFloat() {
+    if (this->captured_serial_data.size() < 4) {
+        this->application->logger->log("Attempted to read read serial float without enough bytes!");
+        return 0;
+    }
+
+    union {
+        char bytes[4];
+        float value;
+    } data;
+
+    for (int i = 0; i < 4; i++) {
+        data.bytes[i] = this->captured_serial_data.front();
+        this->captured_serial_data.pop_front();
+    }
+
+    return data.value;
 }
 
 int USBInterface::messageFromString(std::string message, char* out_buffer, int out_buffer_size) {

@@ -21,7 +21,7 @@ const int Application::startApplication(const int width, const int height) {
 
 	while (this->runApplication) {
 		this->usbInterface->updateRead();
-		this->usbInterface->processInput();
+		this->usbInterface->processSerialIO();
 
 		/*********************************
 		 * Render the 3D Viewport Surface:

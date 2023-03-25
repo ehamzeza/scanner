@@ -115,6 +115,8 @@ bool SerialConnection::write_data(const char* buffer, unsigned int buffer_size) 
         return false;
     }
 
+    FlushFileBuffers(handle);
+
     return true;
 }
 
