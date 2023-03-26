@@ -32,20 +32,24 @@ private:
     const unsigned int command_output_buffer_size = 32;
     char* command_output_buffer;
 
-struct {
-    std::string command;
-    bool sent = false;
-} typedef ScanCommand;
+    struct {
+        std::string command;
+        bool sent = false;
 
-struct {
-    bool scan_started = false;
-    float scan_height = 0.0f; // milimeters
-    float scan_z_resolution = 10.0f; // milimeters
-    float scan_arc_resolution = 36.0f; // degrees
-    std::vector<glm::vec3> scanned_points;
-    std::queue<ScanCommand> command_queue;
-} typedef ScanData;
-ScanData scan_data;
+        float row_height = 0.0f;
+        float arc_offset = 0.0f;
+    } typedef ScanCommand;
+
+public:
+    struct {
+        bool scan_started = false;
+        float scan_height = 0.0f; // milimeters
+        float scan_z_resolution = 10.0f; // milimeters
+        float scan_arc_resolution = 36.0f; // degrees
+        std::vector<glm::vec3> scanned_points;
+        std::queue<ScanCommand> command_queue;
+    } typedef ScanData;
+    ScanData scan_data;
 
 public:
     USBInterface(Application* application);
@@ -61,6 +65,10 @@ protected:
     void processCommandR(int code);
     void processCommandZ(char axis);
     void processCommandH(float height);
+    void processCommandG();
+    void processCommandD(int index, float distance);
+    void processCommandS();
+    void processCommandQ(); // Error command
 
     int readSerialInt();
     float readSerialFloat();

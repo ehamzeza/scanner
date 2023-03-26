@@ -46,6 +46,18 @@ const int Application::startApplication(const int width, const int height) {
 		focalCubeModel.scale = {0.1, 0.1, 0.1};
 		this->viewport.renderModel(focalCubeModel, {1.0, 1.0, 0.0});
 
+		// Render the scanned data points if a scan has or is being performed
+		if (this->usbInterface->scan_data.scan_started){
+			Model pointModel(this->cubeVAO);
+			pointModel.rotation = {0.0f, 0.0f, 0.0f};
+			pointModel.scale = {0.05f, 0.05f, 0.05f};
+
+			for (int i = 0; i < this->usbInterface->scan_data.scanned_points.size(); i++) {
+				pointModel.location = this->usbInterface->scan_data.scanned_points.at(i);
+				this->viewport.renderModel(pointModel, {0.0f, 1.0f, 0.0f});
+			}
+		}
+
 		/********************************************************************
 		 * Before rendering anything ImGui, restore the default render target
 		 ********************************************************************/

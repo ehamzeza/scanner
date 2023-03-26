@@ -95,6 +95,36 @@ void USBInterface::processSerialIO() {
                 this->processCommandH(heightValue);
             }
             break;
+
+        case 'g':
+            if (size >= 1) {
+                this->captured_serial_data.pop_front();
+                this->processCommandG();
+            }
+            break;
+
+        case 'd':
+            if (size >= 9) {
+                this->captured_serial_data.pop_front();
+                int index = this->readSerialInt();
+                float distance = this->readSerialFloat();
+
+                this->processCommandD(index, distance);
+            }
+            break;
+        
+        case 's':
+            if (size >= 1) {
+                this->captured_serial_data.pop_front();
+                this->processCommandS();
+            }
+            break;
+
+        case 'q':
+            if (size >= 1) {
+                this->captured_serial_data.pop_front();
+                this->processCommandQ();
+            }
         
         case '$':
             if (size >= 5) {
@@ -202,7 +232,61 @@ void USBInterface::processCommandZ(char axis) {
 }
 
 void USBInterface::processCommandH(float height) {
-    this->application->logger->log(std::string("Hello: h ") + std::to_string(height));
+    this->application->logger->log("Calculating scan commands...");
+    this->scan_data.command_queue.pop();
+
+    int num_rows = height / this->scan_data.scan_z_resolution;
+
+    for (int i = 0; i < num_rows; i++) {
+        // Move to row.
+        ScanCommand moveUp {
+            .command = "g z " + std::to_string(height * i)
+        };
+        this->scan_data.command_queue.push(moveUp);
+
+        // Move R to zero
+        ScanCommand moveRZero {
+            .command = "g r 0.0"
+        };
+        this->scan_data.command_queue.push(moveRZero);
+
+        // Scan this row
+        ScanCommand scanRow;
+        scanRow.command = "s " + std::to_string((int) (360.0f / this->scan_data.scan_arc_resolution)) + " " + std::to_string(this->scan_data.scan_arc_resolution);
+        std::cout << "command scanrow" << scanRow.command << std::endl;
+        scanRow.row_height = this->scan_data.scan_z_resolution * i;
+        scanRow.arc_offset = 0.0f;
+        this->scan_data.command_queue.push(scanRow);
+    }
+}
+
+void USBInterface::processCommandD(int index, float distance) {
+    // Check to see that the curren't command is an S command
+    if (!this->scan_data.command_queue.front().command.find("s") == 0) {
+        this->application->logger->log("ERROR: Recieved data packet outside of scan command!");
+        return;
+    }
+
+    float angle = (this->scan_data.scan_arc_resolution * index) * (M_PI / 180.0f);
+    angle += this->scan_data.command_queue.front().arc_offset;
+
+    float x = 0.1f * distance * cos(angle);
+    float y = 0.1f * this->scan_data.command_queue.front().row_height;
+    float z = 0.1f * distance * sin(angle);
+
+    this->scan_data.scanned_points.push_back(glm::vec3(x, y, z));
+}
+
+void USBInterface::processCommandS() {
+    this->scan_data.command_queue.pop();
+}
+
+void USBInterface::processCommandG() {
+    this->scan_data.command_queue.pop();
+}
+
+void USBInterface::processCommandQ() {
+    this->application->logger->log("ERROR: Stop requested from scanner!");
 }
 
 void USBInterface::renderImGUI() {
@@ -264,12 +348,12 @@ void USBInterface::renderImGUI() {
     }
 
     ImGui::Separator();
-    ImGui::Text("Communication Controls:");
+    ImGui::Text("Manual Communication Controls:");
 
     ImGui::InputText(std::string("Command: ").c_str(), this->command_input_buffer, this->command_input_buffer_size);
 
     ImGui::SameLine();
-    if (ImGui::Button(std::string("Scan!").c_str())) {
+    if (ImGui::Button(std::string("Send!").c_str())) {
         if (this->scan_data.scan_started) {
             this->application->logger->log("WARNING: Sending manual commands with active scan, reseting scan...");
             this->resetScan();
@@ -289,6 +373,12 @@ void USBInterface::renderImGUI() {
     if (ImGui::Button(std::string("Reset Input").c_str())) {
         this->captured_serial_data.clear();
     }
+
+    ImGui::Separator();
+    ImGui::Text("Scan Controls:");
+
+    ImGui::InputFloat("Z-Resolution (mm)", &this->scan_data.scan_z_resolution, 1.0f);
+    ImGui::InputFloat("R-Resolution (deg)", &this->scan_data.scan_arc_resolution, 1.0f);
 
     if (ImGui::Button(std::string("Start Scan").c_str())) {
         this->startScan();
