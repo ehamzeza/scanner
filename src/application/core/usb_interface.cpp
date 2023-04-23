@@ -240,7 +240,7 @@ void USBInterface::processCommandH(float height) {
     for (int i = 0; i < num_rows; i++) {
         // Move to row.
         ScanCommand moveUp {
-            .command = "g z " + std::to_string(height * i)
+            .command = "g z " + std::to_string(this->scan_data.scan_z_resolution * i)
         };
         this->scan_data.command_queue.push(moveUp);
 
@@ -282,7 +282,9 @@ void USBInterface::processCommandS() {
 }
 
 void USBInterface::processCommandG() {
-    this->scan_data.command_queue.pop();
+    if (this->scan_data.scan_started) {
+        this->scan_data.command_queue.pop();
+    }
 }
 
 void USBInterface::processCommandQ() {
@@ -342,7 +344,7 @@ void USBInterface::renderImGUI() {
     if (ImGui::Button(std::string("Disconnect").c_str())) {
         this->application->logger->log("Disconnecting...");
         if (this->connection != nullptr) {
-            this->connection->close();
+            this->connection->close_connection();
             delete this->connection;
         }
     }
@@ -403,7 +405,7 @@ void USBInterface::cleanUp() {
 
     // Close the connection if it exists
     if (this->connection != nullptr) {
-        this->connection->close();
+        this->connection->close_connection();
         delete this->connection;
     }
 }

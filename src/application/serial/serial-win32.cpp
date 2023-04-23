@@ -76,7 +76,7 @@ SerialConnection::SerialConnection(const std::string port) {
     Sleep(SETUP_WAIT_TIME);
 }
 
-int SerialConnection::read_data(const char* buffer, unsigned int buffer_size) {
+int SerialConnection::read_data(char* buffer, unsigned int buffer_size) {
     DWORD num_read;
     unsigned int num_to_read = 0;
 
@@ -121,10 +121,10 @@ bool SerialConnection::write_data(const char* buffer, unsigned int buffer_size) 
 }
 
 SerialConnection::~SerialConnection() {
-    this->close();
+    this->close_connection();
 }
 
-void SerialConnection::close() {
+void SerialConnection::close_connection() {
     if (this->connected) {
         CloseHandle(handle);
         this->connected = false;

@@ -13,7 +13,8 @@ add_executable(${PROJECT_NAME}
     "src/application/core/usb_interface.cpp"
     "src/application/logger/logger.cpp"
     "src/application/serial/serial.cpp"
-    "src/application/serial/serial-win32.cpp"
+    # "src/application/serial/serial-win32.cpp"
+    "src/application/serial/serial-linux.cpp"
     
     # Shaders
     "src/application/shaders/basic_shader.cpp"
@@ -31,6 +32,14 @@ add_executable(${PROJECT_NAME}
     "src/graphics/utility/utility.cpp"
     "src/graphics/utility/mouse.cpp"
     "src/graphics/utility/math.cpp")
+
+# if (WIN32)
+#     add_executable(${PROJECT_NAME} "src/application/serial/serial-win32.cpp")
+# endif(WIN32)
+
+# if (UNIX)
+#     add_executable(${PROJECT_NAME} "src/application/serial/serial-linux.cpp")
+# endif(UNIX)
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE
@@ -53,6 +62,10 @@ target_include_directories(${PROJECT_NAME}
     "src/graphics/display/window"
     "src/graphics/display/surface"
     "src/graphics/utility")
+
+# sudo apt install libudev-dev
+# find_library(UDEV_LIBRARY NAMES udev REQUIRED)
+# target_link_libraries(${PROJECT_NAME} PUBLIC ${UDEV_LIBRARY})
 
 # We do not want to build the GLFW tests, examples, and 
 # documentation when we are building the slicer.
