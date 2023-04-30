@@ -6,15 +6,13 @@ set(CMAKE_BUILD_TYPE Debug)
 set(PROJECT_NAME "scanner")
 project(${PROJECT_NAME})
 
-add_executable(${PROJECT_NAME}
+set(CORE_FILES
     "src/main.cpp"
     "src/application/core/viewport.cpp"
     "src/application/core/application.cpp"
     "src/application/core/usb_interface.cpp"
     "src/application/logger/logger.cpp"
     "src/application/serial/serial.cpp"
-    # "src/application/serial/serial-win32.cpp"
-    "src/application/serial/serial-linux.cpp"
     
     # Shaders
     "src/application/shaders/basic_shader.cpp"
@@ -33,13 +31,16 @@ add_executable(${PROJECT_NAME}
     "src/graphics/utility/mouse.cpp"
     "src/graphics/utility/math.cpp")
 
-# if (WIN32)
-#     add_executable(${PROJECT_NAME} "src/application/serial/serial-win32.cpp")
-# endif(WIN32)
+if (${WIN32})
+add_executable(${PROJECT_NAME} 
+    ${CORE_FILES}
+    "src/application/serial/serial-win32.cpp")
+elseif(${UNIX})
+add_executable(${PROJECT_NAME}
+    ${CORE_FILES}
+    "src/application/serial/serial-linux.cpp")
+endif(${WIN32})
 
-# if (UNIX)
-#     add_executable(${PROJECT_NAME} "src/application/serial/serial-linux.cpp")
-# endif(UNIX)
 
 target_include_directories(${PROJECT_NAME}
     PRIVATE
