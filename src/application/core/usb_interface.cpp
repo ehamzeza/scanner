@@ -21,7 +21,7 @@ USBInterface::USBInterface(Application* application) {
 }
 
 void USBInterface::updateRead() {
-    if (!this->connection)
+    if (this->connection == nullptr)
         return;
 
     if (!this->connection->is_connected())
@@ -346,6 +346,7 @@ void USBInterface::renderImGUI() {
         if (this->connection != nullptr) {
             this->connection->close_connection();
             delete this->connection;
+            this->connection = nullptr;
         }
     }
 

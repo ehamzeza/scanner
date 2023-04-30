@@ -6,11 +6,33 @@
 #include <fcntl.h>
 #include <errno.h>
 
+#include <stdlib.h>
+#include <stdio.h>
+
 std::vector<DeviceListEntry> get_available_ports() {
-	std::vector<DeviceListEntry> entries;
+    const unsigned int buffer_size = 1024;	
+    std::vector<DeviceListEntry> entries;
+    
+    FILE* file;
+    char* buffer = new char[buffer_size];
 
-	entries.push_back(DeviceListEntry("/dev/ttyACM0", "Arduino (HC): /dev/ttyACM0"));
+    file = popen("/bin/ls /dev", "r");
+    if (!file) {
+        std::cerr << "Failed to execute external command!" << std::endl;
+        return entries;
+    }
 
+    while (fgets(buffer, buffer_size, file) != NULL) {
+        std::string cpp_buffer = std::string(buffer);
+
+        if (cpp_buffer.find("ACM") != std::string::npos) {
+            std::string path = "/dev/" + cpp_buffer.substr(0, cpp_buffer.size() - 1);
+            entries.push_back(DeviceListEntry(path, "Arduino: " + path));
+        }
+    }
+
+    pclose(file);
+    delete[] buffer;
 	return entries;
 }
 

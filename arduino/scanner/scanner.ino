@@ -37,20 +37,21 @@ float getScanDistance()
 void scanLine(uint32_t num_points, float spacing)
 {
     setEnabled(&rMotor, true);
-    rMotor.theta_degrees -= 360;
-    moveMotorTo(&rMotor, 0, 500);
+    // rMotor.theta_degrees -= 360;
+    moveMotorTo(&rMotor, 0, 200);
 
     for (uint32_t i = 0; i < num_points; i++)
     {
-        delay(50);
-        float dist = 0;
-        for (int j = 0; j < 10; j++)
-        {
+        // delay(50);
+        // float dist = 0;
+        // for (int j = 0; j < 10; j++)
+        // {
 
-            dist += (1.0 / 10.0) * (100.0 - getScanDistance());
-        }
+        //     dist += (1.0 / 10.0) * (100.0 - getScanDistance());
+        // }
+        float dist = 100.0 - getScanDistance();
         delay(10);
-        moveMotorRelative(&rMotor, spacing, 500);
+        moveMotorRelative(&rMotor, spacing, 200);
 
         Serial.print('d');
         Serial.write((char *)&i, 4);
