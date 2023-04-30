@@ -11,6 +11,7 @@ struct StepperMotor
 {
     int step_pin, dir_pin, enable_pin;
     float theta_degrees;
+    bool enabled;
 };
 
 void initializeMotor(StepperMotor* stepper, int step_pin, int dir_pin, int enable_pin);

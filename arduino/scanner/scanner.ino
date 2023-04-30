@@ -3,6 +3,15 @@
 
 #include "stepper.h"
 
+#include <SPI.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 32
+#define OLED_RESET -1 // Reset pin # (or -1 if sharing Arduino reset pin)
+#define SCREEN_ADDRESS 0x3C ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
+
 #define STEPPER_Z_DIRECTION_PIN 8
 #define STEPPER_Z_STEP_PIN 9
 #define STEPPER_Z_ENABLE_PIN 7
@@ -14,11 +23,17 @@
 #define LIMIT_TOP_PIN 2
 #define LIMIT_BOTTOM_PIN 4
 
+#define BUTTON_1_PIN 5
+#define BUTTON_2_PIN 3
+#define BUTTON_3_PIN 6
+
 #define Z_TRAVEL_LIMIT 160.0f //mm
 
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+SFEVL53L1X distanceSensor;
 StepperMotor zMotor;
 StepperMotor rMotor;
-SFEVL53L1X distanceSensor;
+
 uint32_t readyCode = 0;
 
 float getScanDistance()
@@ -38,7 +53,7 @@ void scanLine(uint32_t num_points, float spacing)
 {
     setEnabled(&rMotor, true);
     // rMotor.theta_degrees -= 360;
-    moveMotorTo(&rMotor, 0, 200);
+    // moveMotorTo(&rMotor, 0, 200);
 
     for (uint32_t i = 0; i < num_points; i++)
     {
@@ -142,6 +157,25 @@ float determinePartHeight()
     return zMotor.theta_degrees / 360.0f;
 }
 
+void processButtons()
+{
+    bool button2Pressed = digitalRead(BUTTON_2_PIN) == LOW;
+
+    if (button2Pressed)
+    {
+        debugLog("B2");
+    }
+
+    StepperMotor* motor = button2Pressed ? &rMotor : &zMotor;
+    float amount = button2Pressed ? 30 : 10; 
+    float delay_microsec = button2Pressed ? 250 : 50;
+
+    if (digitalRead(BUTTON_1_PIN) == LOW)
+        moveMotorRelative(motor, amount, delay_microsec);
+    else if (digitalRead(BUTTON_3_PIN) == LOW)
+        moveMotorRelative(motor, -amount, delay_microsec);
+}
+
 void setup(void)
 {
     Wire.begin();
@@ -156,17 +190,42 @@ void setup(void)
     pinMode(LIMIT_TOP_PIN, INPUT);
     pinMode(LIMIT_BOTTOM_PIN, INPUT);
 
+    pinMode(BUTTON_1_PIN, INPUT_PULLUP);
+    pinMode(BUTTON_2_PIN, INPUT_PULLUP);
+    pinMode(BUTTON_3_PIN, INPUT_PULLUP);
+
+    debugLog("Initializing...");
+
     // Initialize the TOF sensor, and alert if failure.
     if (distanceSensor.begin())
         debugLog("TOF Sensor Failed!");
 
+    // SSD1306_SWITCHCAPVCC = generate display voltage from 3.3V internally
+    if(!display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS)) {
+        debugLog("Display allocation failed!");
+    }
+
     debugLog("Scanner online!");
+
+    display.clearDisplay();
+    display.setTextSize(1);      // Normal 1:1 pixel scale
+    display.setTextColor(SSD1306_WHITE); // Draw white text
+    display.setCursor(0, 0);     // Start at top-left corner
+    display.cp437(true);         // Use full 256 char 'Code Page 437' font
+
+    const char* text = "Scanner";
+    for (int i = 0; i < strlen(text); i++)
+    {
+    display.write(text[i]);
+    }
+    display.display();
+
     readyCode = 1;
 }
 
 void loop(void)
 {
-    // debugLog(String(getScanDistance()));
+    processButtons();
 
     if (Serial.available() <= 0)
         return;

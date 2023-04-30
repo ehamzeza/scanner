@@ -22,6 +22,7 @@ void setEnabled(StepperMotor* stepper, bool enabled)
 {
     // Digital LOW enables the stepper driver.
     digitalWrite(stepper->enable_pin, enabled ? LOW : HIGH);
+    stepper->enabled = enabled;
 }
 
 void moveMotorTo(StepperMotor* stepper, float theta_target, float delay_microsec)
@@ -32,7 +33,8 @@ void moveMotorTo(StepperMotor* stepper, float theta_target, float delay_microsec
 void moveMotorRelative(StepperMotor* stepper, float theta_delta, float delay_microsec)
 {
     // Turn on the motor and set the direction.
-    // setEnabled(stepper, true);
+    bool storedEnabled = stepper->enabled;
+    setEnabled(stepper, true);
     digitalWrite(stepper->dir_pin, theta_delta < 0 ? HIGH : LOW);
 
     // Compute the required number of steps and pulse them.
@@ -52,6 +54,7 @@ void moveMotorRelative(StepperMotor* stepper, float theta_delta, float delay_mic
 
     // // Turn off the motor.
     // setEnabled(stepper, false);
+    setEnabled(stepper, storedEnabled);
 }
 
 void pulseMotor(StepperMotor* stepper, float delay_microsec)

@@ -245,10 +245,10 @@ void USBInterface::processCommandH(float height) {
         this->scan_data.command_queue.push(moveUp);
 
         // Move R to zero
-        ScanCommand moveRZero {
-            .command = "g r 0.0"
-        };
-        this->scan_data.command_queue.push(moveRZero);
+        // ScanCommand moveRZero {
+        //     .command = "g r 0.0"
+        // };
+        // this->scan_data.command_queue.push(moveRZero);
 
         // Scan this row
         ScanCommand scanRow;
