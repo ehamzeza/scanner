@@ -2,7 +2,8 @@
 
 #include "application.hpp"
 #include "serial.hpp"
-
+#include "scan_data.hpp"
+#include "obj_writer.hpp"
 #include <glm/vec3.hpp>
 
 #include <sstream>
@@ -29,26 +30,13 @@ private:
     const unsigned int command_input_buffer_size = 32;
     char* command_input_buffer;
 
+    const unsigned int file_output_buffer_size = 1024;
+    char* file_output_buffer;
+
     const unsigned int command_output_buffer_size = 32;
     char* command_output_buffer;
 
-    struct {
-        std::string command;
-        bool sent = false;
-
-        float row_height = 0.0f;
-        float arc_offset = 0.0f;
-    } typedef ScanCommand;
-
 public:
-    struct {
-        bool scan_started = false;
-        float scan_height = 0.0f; // milimeters
-        float scan_z_resolution = 10.0f; // milimeters
-        float scan_arc_resolution = 36.0f; // degrees
-        std::vector<glm::vec3> scanned_points;
-        std::queue<ScanCommand> command_queue;
-    } typedef ScanData;
     ScanData scan_data;
 
 public:

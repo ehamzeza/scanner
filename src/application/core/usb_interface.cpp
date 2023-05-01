@@ -17,6 +17,11 @@ USBInterface::USBInterface(Application* application) {
     for (int i = 0; i < this->command_output_buffer_size; i++)
         this->command_output_buffer[i] = '\0';
 
+    this->file_output_buffer = new char[this->file_output_buffer_size];
+    for (int i = 0; i < this->file_output_buffer_size; i++)
+        this->file_output_buffer[i] = '\0';
+
+
     this->serial_selected_index = 0;
 }
 
@@ -234,7 +239,7 @@ void USBInterface::processCommandZ(char axis) {
 void USBInterface::processCommandH(float height) {
     this->application->logger->log("Calculating scan commands...");
     this->scan_data.command_queue.pop();
-
+    this->scan_data.scan_height = height;
     int num_rows = height / this->scan_data.scan_z_resolution;
 
     for (int i = 0; i < num_rows; i++) {
@@ -392,6 +397,13 @@ void USBInterface::renderImGUI() {
         this->resetScan();
     }
 
+
+    ImGui::InputText(std::string("Output File:").c_str(), this->file_output_buffer, this->file_output_buffer_size);
+
+    if (ImGui::Button(std::string("Write to file").c_str())) {
+        write_obj_file(this->scan_data, std::string(this->file_output_buffer));
+    }
+
     if (!already_connected) {
         ImGui::EndDisabled();
     }
@@ -403,6 +415,7 @@ void USBInterface::cleanUp() {
     delete[] this->data_buffer;
     delete[] this->command_input_buffer;
     delete[] this->command_output_buffer;
+    delete[] this->file_output_buffer;
 
     // Close the connection if it exists
     if (this->connection != nullptr) {

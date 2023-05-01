@@ -13,6 +13,7 @@ set(CORE_FILES
     "src/application/core/usb_interface.cpp"
     "src/application/logger/logger.cpp"
     "src/application/serial/serial.cpp"
+    "src/application/fileio/obj_writer.cpp"
     
     # Shaders
     "src/application/shaders/basic_shader.cpp"
@@ -49,6 +50,7 @@ target_include_directories(${PROJECT_NAME}
     "src/application/core"
     "src/application/logger"
     "src/application/serial"
+    "src/application/fileio"
 
     # Shaders
     "src/application/shaders"
